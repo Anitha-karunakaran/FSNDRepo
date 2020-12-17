@@ -116,6 +116,15 @@ class VenueForm(Form):
     facebook_link = StringField(
         'facebook_link', validators=[URL()]
     )
+    website = StringField(
+        'website', validators=[URL()]
+    )
+    seeking_artist = BooleanField(
+        'seeking_artist'
+    )
+    seeking_description = StringField(
+        'seeking_description'
+    )
 
 class ArtistForm(Form):
     name = StringField(

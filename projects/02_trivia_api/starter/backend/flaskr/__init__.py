@@ -8,7 +8,6 @@ import random
 from models import setup_db, Question, Category
 
 QUESTIONS_PER_PAGE = 10
-MAX_QUESTIONS_IN_A_QUIZ = 5
 
 def paginate_questions(request, selection):
   page = request.args.get('page', 1, type=int)
@@ -47,13 +46,14 @@ def create_app(test_config=None):
         ctg_dictionary[ctg.id] = ctg.type
 
       return jsonify({
-        'categories': ctg_dictionary
+        'categories': ctg_dictionary,
+        'success': True
       }),200
     except:
       abort(500)
 
   '''
-  Endpoint to handle GET requests for questions, 
+    Endpoint to handle GET requests for questions, 
     including pagination (every 10 questions). 
     This endpoint should return a list of questions, 
     number of total questions, current category, categories. 
@@ -81,6 +81,7 @@ def create_app(test_config=None):
         ctg_dictionary[ctg.id] = ctg.type
 
       return jsonify({
+        'success': True,
         'questions': current_questions,
         'totalQuestions': total_no_of_questions,
         'categories': ctg_dictionary
@@ -108,11 +109,11 @@ def create_app(test_config=None):
       question.delete()
       return jsonify({
         'success': True,
-        'message': "Question deleted"
+        'message': "question deleted"
       }), 200
 
     except:
-      abort(500)
+      abort(422)
 
   # ------------------#
   # CREATE
@@ -162,7 +163,7 @@ def create_app(test_config=None):
       search_term = body.get('searchTerm', '')
 
       matched_questions = Question.query.filter(Question.question.ilike(f'%{search_term}%')).all()
-      if(matched_questions is None):
+      if (matched_questions is None) or (len(matched_questions)==0):
         abort(404)
       current_questions = paginate_questions(request, matched_questions)
 
@@ -176,6 +177,7 @@ def create_app(test_config=None):
         ctg_dictionary[ctg.id] = ctg.type
 
       return jsonify({
+        'success': True,
         'questions': current_questions,
         'totalQuestions': len(current_questions),
         'categories': ctg_dictionary

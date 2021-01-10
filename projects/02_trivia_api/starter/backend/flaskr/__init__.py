@@ -1,4 +1,5 @@
 import os
+import sys
 from flask import Flask, request, abort, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
@@ -216,7 +217,6 @@ def create_app(test_config=None):
       abort(500)
 
   '''
-  @TODO: 
   Create a POST endpoint to get questions to play the quiz. 
   This endpoint should take category and previous question parameters 
   and return a random questions within the given category, 
@@ -231,47 +231,72 @@ def create_app(test_config=None):
   @app.route('/quizzes', methods=['POST'])
   def show_quiz():
     body = request.get_json()
+    # print('body******'+ str(body))
     previous_questions = body.get('previous_questions', None)
-
     quiz_category = body.get('quiz_category', None)
     if ((quiz_category is None) or (previous_questions is None)):
-      abort(400)
+      abort(422)
+      # print('******abort 422')
 
-    if(quiz_category['id'] == 0):
-      questions = Question.query.all()
-    else:
-      questions = Question.query.filter(Question.category == quiz_category['id']).all()
+    try:
+      if(quiz_category['id'] == 0):
+        # print('*****Quiz Category All')
+        # print('*****previous_questions'+str(type(previous_questions))+'**'+str(previous_questions))
+        questions = Question.query.filter(Question.id.notin_(previous_questions)).all()
+        # print('*****Qn All -'+str(questions))
 
-    random_index = random.randint(0, len(questions)-1)
+      else:
+        # print('*****Quiz Category'+str(quiz_category['id']))
+        # print('*****previous_questions' + str(type(previous_questions)) + '**' + str(previous_questions))
+        questions = Question.query.filter_by(category=quiz_category['id']).filter(Question.id.notin_(previous_questions)).all()
+        # print('questions in Category ********' + str(questions))
+      if len(questions) > 0:
+        next_question = questions[random.randrange(0, len(questions))].format()
+      else:
+        next_question = None
 
-    next_qn = None
-
-    already_asked = True
-    max_reached = False
-    count = 0
-    while (already_asked is True) and (not max_reached) and (count < MAX_QUESTIONS_IN_A_QUIZ):
-      next_qn = questions[random.randint(0, len(questions)-1)]
-      print('**********'+str(next_qn.format()))
-      already_asked = next_qn.id in previous_questions
-      count = count + 1
-      max_reached = (count >= len(questions))
-
-    if (next_qn is None) or ((next_qn is not None) and (max_reached is True) or count >= MAX_QUESTIONS_IN_A_QUIZ):
-      return jsonify({
-        'success': True
-      }), 200
-    else:
       return jsonify({
         'success': True,
-        'question': next_qn.format()
+        'question': next_question
       }), 200
+    except:
+      print('Error::'+str(sys.exc_info()))
+      abort(500)
 
-  '''
-  @TODO: 
-  Create error handlers for all expected errors 
-  including 404 and 422. 
-  '''
-  
+
+  # ----------------------------------------------------------------------------#
+  # Error Handlers
+  # ----------------------------------------------------------------------------#
+  @app.errorhandler(404)
+  def not_found(error):
+    return jsonify({
+      'success': False,
+      'error': 404,
+      'message': 'resource not found'
+    }), 404
+
+  @app.errorhandler(400)
+  def bad_request(error):
+    return jsonify({
+      'success': False,
+      'error': 400,
+      'message': 'bad request'
+    }), 400
+
+  @app.errorhandler(422)
+  def request_unprocessable(error):
+        return jsonify({
+            'success': False,
+            'error': 422,
+            'message': 'request is unprocessable'
+        }), 422
+
+  @app.errorhandler(500)
+  def internal_server_error(error):
+      return jsonify({
+          'success': False,
+          'error': 500,
+          'message': 'internal server error'
+      }), 500
+
   return app
-
-    

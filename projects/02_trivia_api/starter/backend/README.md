@@ -89,19 +89,92 @@ GET '/questions?page=<page_number>'
 - Fetches all questions in sets of pages
 - Request Arguments: page (Optional, Default Page Number is 1)
 - Number of questions per page is 10
-- Returns: 
+- Sample Response: 
 {
 'categories': {'1': 'Science', '2': 'Art', '3': 'Geography', '4': 'History', '5': 'Entertainment', '6': 'Sports'},
 'questions': 
-[{'answer': 'Lake Victoria', 'category': 3, 'difficulty': 2, 'id': 13, 'question': 'What is the largest lake in Africa?'},
-{'answer': 'The Palace of Versailles', 'category': 3, 'difficulty': 3, 'id': 14, 'question': 'In which royal palace would you find the Hall of Mirrors?'},
+[{'answer': 'Lake Victoria', 'category': 1, 'difficulty': 2, 'id': 13, 'question': 'What is the largest lake in Africa?'},
+{'answer': 'The Palace of Versailles', 'category': 2, 'difficulty': 3, 'id': 14, 'question': 'In which royal palace would you find the Hall of Mirrors?'},
 {'answer': 'Agra', 'category': 3, 'difficulty': 2, 'id': 15, 'question': 'The Taj Mahal is located in which Indian city?'}
-]}
+]},
+'success': True, 
+'totalQuestions': 27
+}
+```
+
+### Getting all Questions of a Category
+```
+GET '/categories/<int:category_id>/questions'
+- Fetches all questions in sets of pages
+- Request Arguments: page (Optional, Default Page Number is 1)
+- Number of questions per page is 10
+- Sample Response: 
+{
+        'success': True,
+        'questions': [{'answer': 'Lake Victoria', 'category': 3, 'difficulty': 2, 'id': 13, 'question': 'What is the largest lake in Africa?'},
+                    {'answer': 'The Palace of Versailles', 'category': 3, 'difficulty': 3, 'id': 14, 'question': 'In which royal palace would you find the Hall of Mirrors?'},
+                    {'answer': 'Agra', 'category': 3, 'difficulty': 2, 'id': 15, 'question': 'The Taj Mahal is located in which Indian city?'}
+                    ],
+        'totalQuestions': 3,
+        'categories': {'1': 'Science', '2': 'Art', '3': 'Geography', '4': 'History', '5': 'Entertainment', '6': 'Sports'},
+        'currentCategory': 3
+}
+
+```
+### Searching a question based on a search Term
+```
+Sample Request - POST   /questions/search
+Request Body: {'searchTerm': 'built'}
+Sample Response:
+{
+        'success': True,
+        'questions': current_questions,
+        'totalQuestions': 2,
+        'categories': {'1': 'Science', '2': 'Art', '3': 'Geography', '4': 'History', '5': 'Entertainment', '6': 'Sports'}        
+      }
+```
+
+```
+### Deleting an existing question by id
+```
+DELETE /questions/<question_id>
+Sample Request - DELETE /questions/2
+Sample Response:
+{
+        'success': True,
+        'message': "question deleted"
+}
+```
+### Playing a quiz
+```
+POST /quizzes
+Sample Request - 
+{
+        "previous_questions": [2, 3], 
+        "quiz_category": {"id": "4"}
+}
+Sample Response:
+{
+  "question": {
+    "answer": "Shah Jahan",
+    "category": 4,
+    "difficulty": 2,
+    "id": 35,
+    "question": "Who built Taj Mahal?"
+  },
+  "success": true
 }
 ```
 
 
+##Errors
+The following errors are handled in Trivia API
+1. 404 - Resource Unavailable
+2. 422 - Request Unprocessable
+3. 500 - Internal Error
 
+
+Success Code is always 200
 ## Testing
 To run the tests, run
 ```

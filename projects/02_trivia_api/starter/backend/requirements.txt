@@ -15,3 +15,4 @@ Werkzeug
 babel
 python-dateutil==2.6.0
 flask-wtf
+python-dotenv

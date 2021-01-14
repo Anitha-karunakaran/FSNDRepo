@@ -5,6 +5,12 @@ from flask_sqlalchemy import SQLAlchemy
 
 from flaskr import create_app
 from models import setup_db, Question, Category
+from settings import (
+DATABASE_HOSTNAME,
+DATABASE_PORT,
+DATABASE_USER,
+DATABASE_PASSWORD
+)
 
 QUESTION_ID_TO_DELETE = 0
 
@@ -17,8 +23,8 @@ class TriviaTestCase(unittest.TestCase):
         self.app = create_app()
         self.client = self.app.test_client
         self.database_name = "trivia_test"
-        self.database_path = "postgresql://{}:{}@{}/{}".format('postgres', 'postgres', 'localhost:5432',
-                                                               self.database_name)
+        self.database_path = "postgres://{}:{}@{}/{}".format(DATABASE_USER, DATABASE_PASSWORD,
+                                                        DATABASE_HOSTNAME + ':' + DATABASE_PORT, self.database_name)
 
         setup_db(self.app, self.database_path)
 
@@ -112,7 +118,15 @@ class TriviaTestCase(unittest.TestCase):
         print('Result Data::::  ' + str(data))
 
     def test_delete_question(self):
-        url = '/questions/9'
+        create_payload = {'question': 'How many planets are there in Solar System',
+                          'answer': 'eight', 'difficulty': 3, 'category': 1}
+        res = self.client().post('/questions', json=create_payload)
+
+        data = json.loads(res.data)
+        new_question_id = data['created']
+        print('created question id*************** '+str(new_question_id))
+
+        url = '/questions/'+ str(new_question_id)
         res = self.client().delete(url)
 
         data = json.loads(res.data)
@@ -142,7 +156,7 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['success'], True)
         self.assertTrue(data['questions'])
-        self.assertTrue(data['total_questions'])
+        self.assertTrue(data['totalQuestions'])
 
         print('********************************************************************')
         print('Request: POST /questions/search')

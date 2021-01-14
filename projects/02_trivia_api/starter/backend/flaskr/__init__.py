@@ -109,7 +109,8 @@ def create_app(test_config=None):
       question.delete()
       return jsonify({
         'success': True,
-        'message': "question deleted"
+        'message': "question deleted",
+        'id': question_id
       }), 200
 
     except:
@@ -120,8 +121,7 @@ def create_app(test_config=None):
   # ------------------#
 
   '''
-  @TODO: 
-  Create an endpoint to POST a new question, 
+  An endpoint to POST a new question, 
   which will require the question and answer text, 
   category, and difficulty score.
 

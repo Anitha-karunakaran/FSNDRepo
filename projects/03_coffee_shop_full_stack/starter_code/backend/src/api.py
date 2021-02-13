@@ -87,7 +87,7 @@ Endpoint
 
 @app.route('/drinks', methods=['POST'])
 @requires_auth(permission='post:drinks')
-def create_drink(payload):
+def create_drink(jwt):
     try:
         # The request should post the new recipe in the format below
         # {
@@ -137,7 +137,7 @@ Endpoint
 '''
 @app.route('/drinks/<int:drink_id>', methods=['PATCH'])
 @requires_auth('patch:drinks')
-def edit_drank(payload, drink_id):
+def edit_drink(jwt, drink_id):
     try:
         body = request.get_json()
         # title_update = body.get('title')
@@ -166,7 +166,7 @@ def edit_drank(payload, drink_id):
         abort(500)
 
 '''
-@TODO implement endpoint
+Endpoint
     DELETE /drinks/<id>
         where <id> is the existing model id
         it should respond with a 404 error if <id> is not found
@@ -175,7 +175,21 @@ def edit_drank(payload, drink_id):
     returns status code 200 and json {"success": True, "delete": id} where id is the id of the deleted record
         or appropriate status code indicating reason for failure
 '''
-
+@app.route("/drinks/<drink_id>", methods=['DELETE'])
+@requires_auth('delete:drinks')
+def delete_drink(jwt, drink_id):
+    drink = Drink.query.get(drink_id)
+    try:
+        if drink:
+            drink.delete()
+            return jsonify({
+                'success': True,
+                'delete': drink_id
+            })
+        else:
+            abort(422)
+    except:
+        abort(500)
 
 
 # ----------------------------------------------------------------------------#
@@ -215,3 +229,11 @@ def internal_server_error(error):
         'error': 500,
         'message': 'internal server error'
     }), 500
+
+@app.errorhandler(AuthError)
+def handle_auth_error(ex):
+    return jsonify({
+        "success": False,
+        "error": ex.status_code,
+        'message': ex.error
+    }), 401
